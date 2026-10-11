@@ -1,0 +1,39 @@
+table '_Measures Reliability'
+	lineageTag: 792cff40-2f43-4534-beae-51886372e0f2
+
+	measure 'Fault Sessions' = CALCULATE([Total Sessions], Dim_EndReason[IsFault] = TRUE())
+		formatString: 0
+		lineageTag: b2667b6a-253a-48b1-af86-20386afcfbec
+
+	measure 'Fault Rate %' =
+			
+			IF (
+			    [Total Sessions] > 0,
+			    DIVIDE ( [Fault Sessions] + 0, [Total Sessions] )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: c191a094-169f-4127-8152-5b55e7aaa457
+
+	measure 'Normal End %' =
+			
+			DIVIDE(
+			    CALCULATE([Total Sessions], Dim_EndReason[EndCategory] = "Normal"),
+			    [Total Sessions]
+			)
+		lineageTag: 58efdc99-5720-458f-936f-260b72b51ccc
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '_Measures Reliability' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

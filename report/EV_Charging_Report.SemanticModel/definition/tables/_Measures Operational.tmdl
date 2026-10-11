@@ -1,0 +1,127 @@
+table '_Measures Operational'
+	lineageTag: 1a8b9356-1a9a-4ddb-82a6-e3baf0a18b80
+
+	measure 'Charging Time %' =
+			
+			VAR Total = SUM(Fact_Sessions[TotalMin])
+			VAR Charging = SUM(Fact_Sessions[ChargingMin])
+			RETURN DIVIDE(Charging, Total) -- share of plugged-in time that was actually charging
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: bee8a6c5-7143-4216-8b92-89c7ebc6077f
+
+	measure 'Idle Time %' = 1 - [Charging Time %]
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 96a3d710-3d68-465a-9413-33938e94eeed
+
+	measure 'Idle Hours Lost' = DIVIDE(SUM(Fact_Sessions[IdleMin]), 60) -- a port occupied but not charging is a port nobody else can use
+		lineageTag: 2d6e676e-206d-4f85-a30e-cf9f77dae593
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Port Days' =
+			
+			SUMX(
+			    Dim_Station,
+			    VAR FirstDay = Dim_Station[FirstSessionDate]
+			    RETURN
+			    COUNTROWS(FILTER(VALUES(Dim_Date[Date]), Dim_Date[Date] >= FirstDay))
+			)
+		formatString: 0
+		lineageTag: f579e8c0-4c83-44f9-994e-d1dcd943ef09
+
+	measure 'Sessions per Port per Day' = DIVIDE([Total Sessions], [Port Days])
+		formatString: 0.0
+		lineageTag: ad506ef9-ee2b-4c55-82eb-b9cf75274dc0
+
+	measure 'Energy per Port per Day (kWh)' = DIVIDE([Total Energy (kWh)], [Port Days])
+		formatString: 0.0
+		lineageTag: bf1eb112-136d-464f-bb23-5df93a944b9f
+
+	measure 'Utilisation %' =
+			
+			DIVIDE(SUM(Fact_Sessions[TotalMin]), [Port Days] * 1440) -- occupancy: plugged-in minutes vs minutes the ports existed
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 02ec8a4a-d9a4-4f7a-8361-4b5a6d6f1f79
+
+	measure 'Revenue per kWh' = DIVIDE([Total Revenue], [Total Energy (kWh)])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		lineageTag: 10792d8f-91cc-4fb2-8188-ee9147e60c22
+
+		annotation PBI_FormatHint = {"currencyCulture":"en-US"}
+
+	measure 'Revenue per Session' = DIVIDE([Total Revenue], [Total Sessions])
+		lineageTag: e2535495-078b-4152-af30-0079dcdb8809
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sessions % of Total' =
+			
+			DIVIDE(
+			    [Total Sessions],
+			    CALCULATE([Total Sessions], ALLSELECTED())
+			)
+		lineageTag: 33ecf662-d3fd-45e3-899c-17a060014a3b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'First Session' = MIN(Fact_Sessions[DateKey])
+		formatString: General Date
+		lineageTag: be9de148-501c-4d4e-a0cc-8f3bc74635a6
+
+	measure 'Last Session' = MAX(Fact_Sessions[DateKey])
+		formatString: General Date
+		lineageTag: 8d7f1b04-305f-4316-9428-c27bfd5051bb
+
+	measure 'Top 1% Session Share' =
+			
+			VAR Users =
+			    FILTER (
+			        VALUES ( Dim_User[User ID] ),
+			        NOT ISBLANK ( Dim_User[User ID] ) && [Total Sessions] > 0
+			    )
+			VAR N = MAX ( 1, ROUND ( COUNTROWS ( Users ) * 0.01, 0 ) )
+			VAR TopUsers = TOPN ( N, Users, [Total Sessions], DESC )
+			RETURN
+			    DIVIDE (
+			        CALCULATE ( [Total Sessions], TopUsers ),
+			        CALCULATE ( [Total Sessions], Users )
+			    )
+		formatString: 0%;-0%;0%
+		lineageTag: 4e213bc7-ef91-43d4-8296-6194a4962e40
+
+	measure 'First Session Date' = MIN ( Dim_Station[FirstSessionDate] )
+		formatString: Short Date
+		lineageTag: 233c5c88-1218-4920-adef-843b1e392f07
+
+	measure 'Last Session Date' = MAX ( Fact_Sessions[Start Date] )
+		formatString: Short Date
+		lineageTag: 938346b5-7cf6-4189-9e24-6b9cf7b903c1
+
+	measure 'Flag — Over 24h' =
+			
+			CALCULATE ( [Total Sessions], Fact_Sessions[TotalMin] > 1440 )
+		formatString: 0
+		lineageTag: 78979b09-9b1c-4f89-b8e1-f6658813214d
+
+	measure 'Flag — Charging Exceeds Plugged' =
+			
+			CALCULATE (
+			    [Total Sessions],
+			    FILTER ( Fact_Sessions, Fact_Sessions[ChargingMin] > Fact_Sessions[TotalMin] )
+			)
+		formatString: 0
+		lineageTag: a0e2aaab-b641-478e-9c46-7d6cfe7e7474
+
+	partition '_Measures Operational' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

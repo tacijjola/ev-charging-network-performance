@@ -1,0 +1,114 @@
+table '_Benchmark measures'
+	lineageTag: 6d87f181-251f-40d2-94b8-ea6d82eaa327
+
+	measure 'Network kWh per Port per Day' =
+			
+			CALCULATE ( [Energy per Port per Day (kWh)], REMOVEFILTERS ( Dim_Station ) )
+		formatString: 0.0
+		lineageTag: 3740313d-5792-4b73-b2e4-1fef09a4987a
+
+	measure 'Network Utilisation %' =
+			
+			CALCULATE ( [Utilisation %], REMOVEFILTERS ( Dim_Station ) )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 4ad09db4-277e-4aeb-93f8-94af5e1023f9
+
+	measure 'Network Idle Time %' =
+			
+			CALCULATE ( [Idle Time %], REMOVEFILTERS ( Dim_Station ) )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: f6a92fa1-72d8-4b09-9d0d-73160878a659
+
+	measure 'Site Detail Title' =
+			
+			IF (
+			    HASONEVALUE ( Dim_Station[SiteName] ),
+			    SELECTEDVALUE ( Dim_Station[SiteName] ) & " · " & [Ports] & " ports · in service since "
+			        & FORMAT ( MIN ( Dim_Station[FirstSessionDate] ), "mmm yyyy" )
+			        & IF ( [Total Sessions] < 500,
+			               " · only " & FORMAT ( [Total Sessions], "#,0" ) & " sessions — too few to compare",
+			               "" ),
+			    "Site Detail — right-click any site on Page 1 or 3 → Drill through"
+			)
+		lineageTag: 0629ece5-cbab-42d1-bdf1-0ebefd6f986e
+
+	measure 'Session Share by Hour' =
+			
+			DIVIDE ( [Total Sessions], CALCULATE ( [Total Sessions], REMOVEFILTERS ( Dim_Time ) ) )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 357a0bd7-9189-42d0-be60-2ca23901cbbb
+
+	measure 'Network Sessions per Port per Day' = ```
+			
+			  CALCULATE ( [Sessions per Port per Day], REMOVEFILTERS ( Dim_Station ) )
+			```
+		formatString: 0.0
+		lineageTag: 206c74df-0911-421d-9857-66356e5ac567
+
+	measure 'Share Over 4h' =
+			
+			DIVIDE (
+			    CALCULATE ( [Total Sessions], Fact_Sessions[DurationBand] IN { "4–8h", "8h +" } ),
+			    [Total Sessions]
+			)
+		lineageTag: 4bf0458d-c0d6-4f5c-ad5c-a871498ca5df
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Title — Dwell' =
+			
+			FORMAT ( [Share Over 4h], "0%" ) & " of sessions at "
+			    & SELECTEDVALUE ( Dim_Station[SiteName], "the network" )
+			    & " run over 4 hours"
+		lineageTag: 26961892-75ec-4f2d-9b54-618cc1d21451
+
+	measure 'Title — Site Trend' =
+			
+			SELECTEDVALUE ( Dim_Station[SiteName], "Network" ) & " vs network — kWh per port per day"
+		lineageTag: 08bef7b2-4804-459d-87cf-000aea442e32
+
+	measure 'Title — Site Hours' =
+			
+			SELECTEDVALUE ( Dim_Station[SiteName], "Network" ) & " vs network — share of sessions by hour"
+		lineageTag: 6068f4c9-8ee9-4b66-9f58-6fd4aa2135a2
+
+	measure 'Band Share' =
+			
+			DIVIDE (
+			    [Total Sessions],
+			    CALCULATE (
+			        [Total Sessions],
+			        REMOVEFILTERS ( Fact_Sessions[DurationBand], Fact_Sessions[DurationBandSort] )
+			    )
+			)
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 75ca8184-6c98-4c3c-9989-6405acef3776
+
+	measure 'Network Band Share' =
+			
+			CALCULATE ( [Band Share], REMOVEFILTERS ( Dim_Station ) )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: bbf5e3ec-c9b2-4bad-96dd-a690e42d9bb4
+
+	measure 'Network Session Share by Hour' =
+			
+			CALCULATE ( [Session Share by Hour], REMOVEFILTERS ( Dim_Station ) )
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: b13f5b3c-be60-4d4a-9f3a-b7f305bcf1ab
+
+	measure 'Total Sessions Label' = FORMAT ( [Total Sessions], "#,0" )
+		lineageTag: 9ef2bb0d-6d2a-4d5b-9fe3-3a917e378796
+
+	partition '_Benchmark measures' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

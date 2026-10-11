@@ -1,0 +1,176 @@
+createOrReplace
+
+	table Dim_Date
+		lineageTag: 8a4927b0-265e-4220-b5ec-699ec76021e5
+		dataCategory: Time
+
+		column Date
+			dataType: dateTime
+			isKey
+			formatString: Long Date
+			lineageTag: f86ff5e9-c5b4-4383-90a2-d6f745dba551
+			summarizeBy: none
+			sourceColumn: Date
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+			annotation UnderlyingDateTimeDataType = Date
+
+		column Year
+			dataType: int64
+			formatString: 0
+			lineageTag: c5892e32-89e6-4223-9ec9-9cb5c0b9aa74
+			summarizeBy: none
+			sourceColumn: Year
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column Quarter
+			dataType: string
+			lineageTag: cf901931-3810-4cbd-a0f9-96fe1331f652
+			summarizeBy: none
+			sourceColumn: Quarter
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column MonthNo
+			dataType: int64
+			isHidden
+			formatString: 0
+			lineageTag: dda07b5b-5923-4d1c-b40f-8b57731696c8
+			summarizeBy: none
+			sourceColumn: MonthNo
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column MonthName
+			dataType: string
+			lineageTag: 820954b8-6168-4ad7-bb22-53ab645b3ab6
+			summarizeBy: none
+			sourceColumn: MonthName
+			sortByColumn: MonthNo
+
+			changedProperty = SortByColumn
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column YearMonth
+			dataType: string
+			lineageTag: e4b25d97-959d-447d-8ae7-4926b42a3ccb
+			summarizeBy: none
+			sourceColumn: YearMonth
+			sortByColumn: YearMonthSort
+
+			changedProperty = SortByColumn
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column YearMonthSort
+			dataType: int64
+			isHidden
+			formatString: 0
+			lineageTag: 0153bfb7-3654-4481-b43e-aa21c280a73c
+			summarizeBy: none
+			sourceColumn: YearMonthSort
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column WeekdayNo
+			dataType: int64
+			isHidden
+			formatString: 0
+			lineageTag: 6df76ac5-49ab-4784-9be1-a21f05d0ad93
+			summarizeBy: none
+			sourceColumn: WeekdayNo
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column WeekdayName
+			dataType: string
+			lineageTag: a50054a6-5c7c-42e4-ae36-1a456755399b
+			summarizeBy: none
+			sourceColumn: WeekdayName
+			sortByColumn: WeekdayNo
+
+			changedProperty = SortByColumn
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column IsWeekend
+			dataType: boolean
+			formatString: """TRUE"";""TRUE"";""FALSE"""
+			lineageTag: 9c9f9c2b-43fc-4840-a73b-c981fa5aecf0
+			summarizeBy: none
+			sourceColumn: IsWeekend
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column Season
+			dataType: string
+			lineageTag: 7488fc39-aeaf-49ac-857c-b64806235996
+			summarizeBy: none
+			sourceColumn: Season
+
+			changedProperty = IsHidden
+
+			annotation SummarizationSetBy = Automatic
+
+		column DayType = IF('Dim_Date'[IsWeekend], "Weekend", "Weekday")
+			dataType: string
+			summarizeBy: none
+
+
+		partition Dim_Date = m
+			mode: import
+			queryGroup: 02_Dim
+			source =
+					let
+					    StartDate = #date(2011, 1, 1),
+					    EndDate   = #date(2020, 12, 31),
+					    Days      = List.Dates(StartDate, Duration.Days(EndDate - StartDate) + 1, #duration(1,0,0,0)),
+					    Table0    = Table.FromList(Days, Splitter.SplitByNothing(), {"Date"}),
+					    Typed     = Table.TransformColumnTypes(Table0, {{"Date", type date}}),
+					    Cols      = Table.AddColumn(Typed, "Year", each Date.Year([Date]), Int64.Type),
+					    C2  = Table.AddColumn(Cols, "Quarter", each "Q" & Text.From(Date.QuarterOfYear([Date])), type text),
+					    C3  = Table.AddColumn(C2, "MonthNo", each Date.Month([Date]), Int64.Type),
+					    C4  = Table.AddColumn(C3, "MonthName", each Date.ToText([Date], [Format="MMM", Culture="en-GB"]), type text),
+					    C5  = Table.AddColumn(C4, "YearMonth", each Date.ToText([Date], [Format="yyyy-MM"]), type text),
+					    C6  = Table.AddColumn(C5, "YearMonthSort", each Date.Year([Date]) * 100 + Date.Month([Date]), Int64.Type),
+					    C7  = Table.AddColumn(C6, "WeekdayNo", each Date.DayOfWeek([Date], Day.Monday) + 1, Int64.Type),
+					    C8  = Table.AddColumn(C7, "WeekdayName", each Date.ToText([Date], [Format="ddd", Culture="en-GB"]), type text),
+					    C9  = Table.AddColumn(C8, "IsWeekend", each Date.DayOfWeek([Date], Day.Monday) >= 5, type logical),
+					    C10 = Table.AddColumn(C9, "Season", each
+					            if List.Contains({12,1,2}, Date.Month([Date])) then "Winter"
+					            else if List.Contains({3,4,5}, Date.Month([Date])) then "Spring"
+					            else if List.Contains({6,7,8}, Date.Month([Date])) then "Summer"
+					            else "Autumn", type text),
+					    #"Changed Type" = Table.TransformColumnTypes(C10,{{"Date", type date}})
+					in
+					    #"Changed Type"
+
+		changedProperty = IsHidden
+
+		annotation PBI_NavigationStepName = Navigation
+
+		annotation PBI_ResultType = Table
+

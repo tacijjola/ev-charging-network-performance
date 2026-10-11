@@ -1,0 +1,164 @@
+table Dim_User
+	lineageTag: 12e8ae33-fc82-4d93-8daf-f94010f649c4
+
+	measure 'Cumulative Session Share' =
+			
+			VAR D = MAX ( Dim_User[User Decile] )
+			RETURN
+			    DIVIDE (
+			        CALCULATE ( [Total Sessions], Dim_User[User Decile] <= D ),
+			        CALCULATE ( [Total Sessions], Dim_User[User Decile] <= 10 )
+			    )
+		lineageTag: 98e24fa2-39c3-41e2-b915-a3cf30ba9a51
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Title — User Mix' =
+			
+			"Frequent users' share of sessions: "
+			    & FORMAT ( CALCULATE ( [Frequent User Share %], Dim_Date[Year] = 2016 ), "0%" )
+			    & " in 2016 → "
+			    & FORMAT ( CALCULATE ( [Frequent User Share %], Dim_Date[Year] = 2019 ), "0%" )
+			    & " in 2019"
+		lineageTag: f1ef4692-9e6f-4729-a92a-edcee5598ab4
+
+	column 'User ID'
+		dataType: string
+		lineageTag: f6c65458-d228-4a80-9f63-4a8e823ed9bd
+		summarizeBy: none
+		sourceColumn: User ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column SessionCount
+		dataType: int64
+		formatString: 0
+		lineageTag: 76dee62a-a2a5-43ca-b9e0-e5a08c51ca9f
+		summarizeBy: none
+		sourceColumn: SessionCount
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column FirstSession
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5bee192b-5ffa-4de8-bde2-9b830c9f51cb
+		summarizeBy: none
+		sourceColumn: FirstSession
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column LastSession
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ef595554-7fcd-4acd-9ee4-6f04e1873abc
+		summarizeBy: none
+		sourceColumn: LastSession
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TotalEnergyKWh
+		dataType: double
+		lineageTag: cb2e8a46-bddd-4032-a0dd-7b872d0855e2
+		summarizeBy: none
+		sourceColumn: TotalEnergyKWh
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column UserBand
+		dataType: string
+		lineageTag: 07ca5312-14ed-4802-a2ae-6846f8b999df
+		summarizeBy: none
+		sourceColumn: UserBand
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column UserBandSort
+		dataType: int64
+		formatString: 0
+		lineageTag: d85b57ba-bff8-4ef8-b493-30fda524e0c4
+		summarizeBy: none
+		sourceColumn: UserBandSort
+
+		changedProperty = SortByColumn
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'User Sessions' = CALCULATE ( COUNTROWS ( Fact_Sessions ) )
+		isHidden
+		formatString: 0
+		lineageTag: 34972858-a3f4-4adc-a552-d97bc80450ea
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'User Rank' =
+			
+			ROWNUMBER (
+			    ALL ( Dim_User[User ID], Dim_User[User Sessions] ),
+			    ORDERBY ( Dim_User[User Sessions], DESC, Dim_User[User ID], ASC )
+			)
+		isHidden
+		formatString: 0
+		lineageTag: acccca92-2b4b-45c5-83cc-48c4cdf2d66e
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'User Decile' =
+			
+			MIN ( 10, ROUNDUP ( DIVIDE ( Dim_User[User Rank], COUNTROWS ( Dim_User ) ) * 10, 0 ) )
+		formatString: 0
+		lineageTag: 7b089ef8-b770-4541-8edd-1d5de6539ed0
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_User = m
+		mode: import
+		queryGroup: 02_Dim
+		source =
+				let
+				    Source = Src_Sessions,
+				    #"Removed Blanks" = Table.SelectRows(Source, each [User ID] <> null and [User ID] <> ""),
+				    #"Grouped Rows" = Table.Group(#"Removed Blanks", {"User ID"}, {
+				        {"SessionCount", each Table.RowCount(_), Int64.Type},
+				        {"FirstSession", each List.Min([Start Date]), type nullable datetime},
+				        {"LastSession", each List.Max([Start Date]), type nullable datetime},
+				        {"TotalEnergyKWh", each List.Sum([EnergyKWh]), type nullable number}}),
+				    #"Added Band" = Table.AddColumn(#"Grouped Rows", "UserBand", each
+				        if [SessionCount] = 1 then "One-off"
+				        else if [SessionCount] <= 10 then "Occasional"
+				        else "Frequent", type text),
+				    #"Added Band Sort" = Table.AddColumn(#"Added Band", "UserBandSort", each
+				        if [UserBand] = "One-off" then 1 else if [UserBand] = "Occasional" then 2 else 3, Int64.Type),
+				    #"Filtered Rows" = Table.SelectRows(#"Added Band Sort", each ([User ID] <> "0"))
+				in
+				    #"Filtered Rows"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,132 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "8cfc624f87cd6d8b17b3",
+  "position": {
+    "x": 773.50318471337584,
+    "y": 245.60509554140128,
+    "z": 10000,
+    "height": 162.03821656050957,
+    "width": 482.03821656050957,
+    "tabOrder": 10000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures Operational"
+                    }
+                  },
+                  "Property": "Flag — Charging Exceeds Plugged"
+                }
+              },
+              "queryRef": "_Measures Operational.Flag — Charging Exceeds Plugged",
+              "nativeQueryRef": "Charging time exceeds plugged-in time",
+              "displayName": "Charging time exceeds plugged-in time"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures Operational"
+                    }
+                  },
+                  "Property": "Flag — Over 24h"
+                }
+              },
+              "queryRef": "_Measures Operational.Flag — Over 24h",
+              "nativeQueryRef": "Sessions over 24h",
+              "displayName": "Sessions over 24h"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures Users"
+                    }
+                  },
+                  "Property": "Sessions with No User ID"
+                }
+              },
+              "queryRef": "_Measures Users.Sessions with No User ID",
+              "nativeQueryRef": "Sessions with No User ID"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "166.67678228877153D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures Operational.Flag — Charging Exceeds Plugged"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "144.5350287869274D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures Operational.Flag — Over 24h"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "127.44586455620275D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures Users.Sessions with No User ID"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {}
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

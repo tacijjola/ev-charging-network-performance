@@ -1,0 +1,35 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "fe903e361a5879e6ad77",
+  "displayName": "Site & Station Performance",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "displayArea": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "8d9eff820399d2447259",
+      "target": "ba170633310b94baec98",
+      "type": "DataFilter"
+    },
+    {
+      "source": "8d9eff820399d2447259",
+      "target": "5513c1db1cce0079dd12",
+      "type": "DataFilter"
+    }
+  ]
+}

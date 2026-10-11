@@ -1,0 +1,58 @@
+table Dim_EndReason
+	lineageTag: 235d7736-39d7-45a2-95fa-faaef57af3c3
+
+	column 'Ended By'
+		dataType: string
+		lineageTag: ac97b46b-1cdd-46ff-b73c-be4225d5e586
+		summarizeBy: none
+		sourceColumn: Ended By
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column EndCategory
+		dataType: string
+		lineageTag: ade1d75d-2c37-462d-a995-fbadfff11a87
+		summarizeBy: none
+		sourceColumn: EndCategory
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsFault
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 40339277-a345-4f88-ae55-8f039dc5924f
+		summarizeBy: none
+		sourceColumn: IsFault
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_EndReason = m
+		mode: import
+		queryGroup: 02_Dim
+		source =
+				let
+				    Source = Src_Sessions,
+				    #"Kept Column" = Table.SelectColumns(Source, {"Ended By"}),
+				    #"Removed Duplicates" = Table.Distinct(#"Kept Column"),
+				    #"Added Category" = Table.AddColumn(#"Removed Duplicates", "EndCategory", each
+				        if [Ended By] = null or [Ended By] = "" then "Unknown"
+				        else if List.Contains({"Plug Out at Vehicle", "Customer", "Plug Out at Station", "Holster Plugin"}, [Ended By]) then "Normal"
+				        else if List.Contains({"Final GFCI Tripped", "Final 4-strikes GFCI trip", "Outlet Unreachable", "Relay Stuck Closed", "Plug Removed While Rebooting", "Station Offline"}, [Ended By]) then "Fault"
+				        else if List.Contains({"Door Open", "Door", "Door Closed", "OCD"}, [Ended By]) then "Station Event"
+				        else "Other", type text),
+				    #"Added Fault Flag" = Table.AddColumn(#"Added Category", "IsFault", each [EndCategory] = "Fault", type logical)
+				in
+				    #"Added Fault Flag"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

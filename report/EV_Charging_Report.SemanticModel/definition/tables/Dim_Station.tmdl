@@ -1,0 +1,141 @@
+table Dim_Station
+	lineageTag: 2d2ba872-5902-4b09-b6aa-ebfe3f5679b6
+
+	measure Ports = COUNTROWS ( Dim_Station )
+		formatString: 0
+		lineageTag: c8a4ed97-4885-434d-92cf-c6f7ffd724d1
+
+	measure PortCountMeasure = MAX(Dim_Station[PortCount])
+		formatString: 0
+		lineageTag: b481e8f3-e401-45ce-9877-ea56c3647c30
+
+	measure Sites = DISTINCTCOUNT ( Dim_Station[SiteName] )
+		formatString: 0
+		lineageTag: a90af81b-593f-4fa4-8104-546429dbd77b
+
+	column 'Station Name'
+		dataType: string
+		lineageTag: 749d04cf-b9c2-4cf1-8a02-9cdc3daaf44c
+		summarizeBy: none
+		sourceColumn: Station Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column SiteName
+		dataType: string
+		lineageTag: 1f126426-7de2-4269-b207-42deca5a70f9
+		summarizeBy: none
+		sourceColumn: SiteName
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Latitude
+		dataType: double
+		lineageTag: 77429fad-3147-4cfd-b7b6-fd8f0f568aec
+		dataCategory: Latitude
+		summarizeBy: none
+		sourceColumn: Latitude
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Longitude
+		dataType: double
+		lineageTag: 36dfe92f-1f63-4cd8-9959-f1ddf838e4ac
+		dataCategory: Longitude
+		summarizeBy: none
+		sourceColumn: Longitude
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PortType
+		dataType: string
+		lineageTag: ae69289f-ca21-4edf-8dd1-a2dfeb108e6c
+		summarizeBy: none
+		sourceColumn: PortType
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column PlugType
+		dataType: string
+		lineageTag: 2a209217-a5aa-4c0e-8f44-b8ddc7dbbfcb
+		summarizeBy: none
+		sourceColumn: PlugType
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column PortCount
+		dataType: int64
+		formatString: 0
+		lineageTag: d4072d74-f1ce-4d94-b405-f5bf10f95e54
+		summarizeBy: none
+		sourceColumn: PortCount
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Address
+		dataType: string
+		lineageTag: 3638a484-945e-4e44-8e24-fbea445a9556
+		summarizeBy: none
+		sourceColumn: Address
+
+		annotation SummarizationSetBy = Automatic
+
+	column FirstSessionDate =
+			
+			CALCULATE(
+			    MIN(Fact_Sessions[DateKey]),
+			    ALLEXCEPT(Dim_Station, Dim_Station[Station Name])
+			)
+		formatString: Short Date
+		lineageTag: a68b2b1a-c1e2-4324-80f1-8da4cdb6ddad
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Site Label' = Dim_Station[SiteName] & " (" & CALCULATE ( COUNTROWS ( Dim_Station ), ALLEXCEPT ( Dim_Station, Dim_Station[SiteName] ) ) & ")"
+		lineageTag: ce04ad65-7cfe-4be9-ac94-75a019398f81
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Station = m
+		mode: import
+		queryGroup: 02_Dim
+		source =
+				let
+				    Source = Src_Sessions,
+				    #"Grouped Rows" = Table.Group(Source, {"Station Name", "SiteName"}, {
+				        {"Address", each List.Max([Address]), type nullable text},
+				        {"Latitude", each List.Max([Latitude]), type nullable number},
+				        {"Longitude", each List.Max([Longitude]), type nullable number},
+				        {"PortType", each List.Max([Port Type]), type nullable text},
+				        {"PlugType", each List.Max([Plug Type]), type nullable text}}),
+				    #"Merged PortCount" = Table.NestedJoin(#"Grouped Rows", {"SiteName"}, Helper_PortCount, {"SiteName"}, "pc", JoinKind.LeftOuter),
+				    #"Expanded PortCount" = Table.ExpandTableColumn(#"Merged PortCount", "pc", {"PortCount"}, {"PortCount"})
+				in
+				    #"Expanded PortCount"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

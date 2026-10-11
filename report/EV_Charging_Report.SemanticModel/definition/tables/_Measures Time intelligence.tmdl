@@ -1,0 +1,65 @@
+table '_Measures Time intelligence'
+	lineageTag: 1f9d5f72-8d3a-4fd9-8b83-d4bd4f06ddd0
+
+	measure 'Energy PY' = CALCULATE([Total Energy (kWh)], SAMEPERIODLASTYEAR(Dim_Date[Date]))
+		lineageTag: 2d925330-5b60-484f-9a74-19a62ecba4aa
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Energy YoY' = [Total Energy (kWh)] - [Energy PY]
+		lineageTag: 7f7682f9-e145-46f5-9f82-61a320c89daa
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Energy YoY %' = DIVIDE([Energy YoY], [Energy PY])
+		lineageTag: c1361810-fc3b-4223-a855-abeca77c359a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sessions PY' = CALCULATE([Total Sessions], SAMEPERIODLASTYEAR(Dim_Date[Date]))
+		formatString: 0
+		lineageTag: b110bc81-578a-42b9-9144-555fae4ea698
+
+	measure 'Sessions YoY %' = DIVIDE([Total Sessions] - [Sessions PY], [Sessions PY])
+		lineageTag: d6de543c-9566-4ead-af1c-a6ab8a42a79b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Energy YTD' = TOTALYTD([Total Energy (kWh)], Dim_Date[Date])
+		lineageTag: 26d637e0-1d44-4f38-9806-3b07e45b2f37
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Energy 3M Rolling Avg' =
+			
+			AVERAGEX(
+			    DATESINPERIOD(Dim_Date[Date], MAX(Dim_Date[Date]), -3, MONTH),
+			    [Total Energy (kWh)]
+			)
+		lineageTag: a91f25bf-e2a8-41dd-9a91-aac9ebc46494
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Energy Running Total' =
+			
+			CALCULATE(
+			    [Total Energy (kWh)],
+			    FILTER(ALLSELECTED(Dim_Date[Date]), Dim_Date[Date] <= MAX(Dim_Date[Date]))
+			)
+		lineageTag: ce5d9499-0a42-48cd-9923-e7ac054a00d4
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition '_Measures Time intelligence' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

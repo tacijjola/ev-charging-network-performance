@@ -1,0 +1,72 @@
+/// Folder containing EVChargingStationUsage.csv
+expression p_DataFolder = "C:\Data\EV" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 6bf7f50c-3f17-4b1d-aba3-b76acb0acde0
+	queryGroup: 00_Params
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression Src_Sessions =
+		let
+		  Source = Csv.Document(File.Contents(p_DataFolder & "\EVChargingStationUsage.csv"), [Delimiter = ",", Columns = 33, Encoding = 65001, QuoteStyle = QuoteStyle.None]),
+		  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+		  #"Removed Columns" = Table.RemoveColumns(#"Promoted headers",{"MAC Address", "Org Name", "Gasoline Savings (gallons)", "EVSE ID", "City", "State/Province", "System S/N", "Model Number", "County", "Country", "Start Time Zone", "End Time Zone", "Transaction Date (Pacific Time)"}),
+		  #"Renamed Columns" = Table.RenameColumns(#"Removed Columns",{{"Total Duration (hh:mm:ss)", "TotalDurationText"}, {"Charging Time (hh:mm:ss)", "ChargingTimeText"}, {"Energy (kWh)", "EnergyKWh"}, {"GHG Savings (kg)", "GHGkg"}, {"Fee", "FeeUSD"}, {"Address 1", "Address"}}),
+		  #"Changed Type" = Table.TransformColumnTypes(#"Renamed Columns",
+		      {{"Station Name", type text}, {"Address", type text},
+		     {"Start Date", type datetime}, {"End Date", type text},
+		     {"TotalDurationText", type text}, {"ChargingTimeText", type text},
+		     {"EnergyKWh", type number}, {"GHGkg", type number}, {"FeeUSD", type number},
+		     {"Latitude", type number}, {"Longitude", type number},
+		     {"Port Type", type text}, {"Plug Type", type text}, {"Currency", type text}, {"Ended By", type text},
+		     {"Port Number", Int64.Type}, {"Plug In Event Id", Int64.Type},
+		     {"User ID", type text}, {"Postal Code", type text}, {"Driver Postal Code", type text}},
+		    "en-US"),
+		  #"Normalised Station" = Table.TransformColumns(#"Changed Type", {{"Station Name", each Text.Trim(Text.Replace(Text.Clean(_), "# ", "#")), type text}}),
+		  #"Added SiteName" = Table.AddColumn(#"Normalised Station", "SiteName", each
+		      Text.Proper(
+		        Text.Trim(
+		          Text.TrimEnd(
+		            Text.Trim(Text.AfterDelimiter(Text.BeforeDelimiter([Station Name], "#"), "/")),
+		            {"0".."9"}
+		          )
+		        )
+		      ), type text),
+		      #"Fixed MPL" = Table.ReplaceValue(#"Added SiteName", "Mpl", "MPL", Replacer.ReplaceText, {"SiteName"}),
+		    #"Replaced Value" = Table.ReplaceValue(#"Fixed MPL","PALO ALTO CA / ","",Replacer.ReplaceText,{"Station Name"})
+		in
+		    #"Replaced Value"
+	lineageTag: 83963aa6-55ea-4fe4-8baa-b7e68ac424f2
+	queryGroup: 01_Staging
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression QA_Rejected =
+		let
+		    Source = Src_Sessions,
+		    #"Filtered Rows" = Table.SelectRows(Source, each ([Currency] <> "" and [Currency] <> "USD"))
+		in
+		    #"Filtered Rows"
+	lineageTag: dc283dc1-014d-4170-ab88-62b0f61f1a38
+	queryGroup: 01_Staging
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+expression Helper_PortCount =
+		let
+		    Source = Src_Sessions,
+		    #"Grouped Rows" = Table.Group(Source, {"SiteName"}, {{"PortCount", each List.Count(List.Distinct([Station Name])), Int64.Type}})
+		in
+		    #"Grouped Rows"
+	lineageTag: 889586cb-a2be-420f-a91e-dcdba35d94d8
+	queryGroup: 02_Dim
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

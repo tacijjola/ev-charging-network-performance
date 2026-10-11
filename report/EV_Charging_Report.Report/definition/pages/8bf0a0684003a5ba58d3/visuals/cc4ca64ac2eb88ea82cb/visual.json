@@ -1,0 +1,188 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "cc4ca64ac2eb88ea82cb",
+  "position": {
+    "x": 23.088023088023089,
+    "y": 482.0779220779221,
+    "z": 3000,
+    "height": 199.48051948051949,
+    "width": 1235.6709956709958,
+    "tabOrder": 3000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Validation & corrections",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "textDecoration": "underline"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "• "
+                  },
+                  {
+                    "value": "Port grain:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " Dim_Station has one row per port (46 rows = 46 ports); port counts use COUNTROWS, never a sum of PortCount."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "In-service denominator:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " counting every port as live from 2011 made late sites look idle. Counting from each port's first session fixed it, and Webster, not Hamilton, emerged as the top site per port."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Shares:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " hourly and duration shares sum to 100%; a sort-by-column filter that forced every band to 100% was fixed."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "User deciles:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " a unique rank (tie-break on User ID) gives ten equal groups."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Missing User IDs",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " were stored as empty text; converted to null and excluded via DISTINCTCOUNTNOBLANK."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Normalisation:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " weekends and weekdays are compared per day; night hours with very few sessions are excluded from the idle peak."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Fee start:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " 1 Aug 2017 at every site except Sherman, which has no paid sessions."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Hypothesis tested:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " \"fees did not reduce usage\" was not supported; sessions per port fell 26%."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Charging longer than plugged-in:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " 43 sessions; kept."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

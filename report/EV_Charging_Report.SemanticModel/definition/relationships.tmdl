@@ -1,0 +1,20 @@
+relationship 29958444-f8d9-9025-07da-e88c2af5e2bd
+	fromColumn: Fact_Sessions.'Ended By'
+	toColumn: Dim_EndReason.'Ended By'
+
+relationship b2ca1dd2-4fab-ae2d-326c-03d2ba157a87
+	fromColumn: Fact_Sessions.'User ID'
+	toColumn: Dim_User.'User ID'
+
+relationship d4c501cc-12c9-0770-0767-d15e7e1e4706
+	fromColumn: Fact_Sessions.DateKey
+	toColumn: Dim_Date.Date
+
+relationship 54827974-ee3d-4501-9480-51a29fab16a3
+	fromColumn: Fact_Sessions.HourOfDay
+	toColumn: Dim_Time.HourOfDay
+
+relationship 4a8af8c0-54bf-0363-132d-ffd38c1b82c6
+	fromColumn: Fact_Sessions.'Station Name'
+	toColumn: Dim_Station.'Station Name'
+

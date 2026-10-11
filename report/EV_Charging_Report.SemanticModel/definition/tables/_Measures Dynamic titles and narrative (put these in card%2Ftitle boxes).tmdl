@@ -1,0 +1,411 @@
+table '_Measures Dynamic titles and narrative (put these in card/title boxes)'
+	lineageTag: 23137e94-c68d-44b7-88e6-7abde43ca4d6
+
+	measure 'Header Title' =
+			
+			"Palo Alto · " &
+			IF(
+			    HASONEVALUE(Dim_Date[Year]),
+			    FORMAT(SELECTEDVALUE(Dim_Date[Year]), "0000"),
+			    "2011 – 2020"
+			)
+		lineageTag: 7f8183a6-5ff3-43bb-90fd-fa27155249e9
+
+	measure 'Insight Line' =
+			
+			VAR EstablishedSites =
+			    FILTER ( ALLSELECTED ( Dim_Station[SiteName] ), [Total Sessions] >= 500 )
+			VAR PerPortSite =
+			    MAXX (
+			        TOPN (
+			            1,
+			            EstablishedSites,
+			            [Energy per Port per Day (kWh)], DESC,
+			            Dim_Station[SiteName], ASC
+			        ),
+			        Dim_Station[SiteName]
+			    )
+			VAR PerPortValue = CALCULATE ( [Energy per Port per Day (kWh)], Dim_Station[SiteName] = PerPortSite )
+			VAR PerPortPorts = CALCULATE ( [Ports], Dim_Station[SiteName] = PerPortSite )
+			VAR NetworkValue = [Energy per Port per Day (kWh)]
+			VAR Ratio        = DIVIDE ( PerPortValue, NetworkValue )
+			VAR EnergySite   = [Top Site by Energy]
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        HASONEVALUE ( Dim_Station[SiteName] ),
+			            SELECTEDVALUE ( Dim_Station[SiteName] ) & "'s " & [Ports] & " ports deliver "
+			                & FORMAT ( NetworkValue, "0.0" ) & " kWh per port per day.",
+			        ISBLANK ( PerPortSite ),
+			            "Too few sessions in this selection to compare sites.",
+			        PerPortSite & "'s " & PerPortPorts & " ports deliver "
+			            & FORMAT ( PerPortValue, "0.0" ) & " kWh per port per day, "
+			            & FORMAT ( Ratio, "0.0" ) & "× the network's " & FORMAT ( NetworkValue, "0.0" )
+			            & IF (
+			                EnergySite = PerPortSite,
+			                ", and it also delivers the most energy overall.",
+			                ", while " & EnergySite & " delivers the most energy overall."
+			            )
+			    )
+		lineageTag: 0bedf618-df88-4253-a5e6-6ce105234783
+
+	measure 'Energy delivered (MWh)' = FORMAT([Total Energy (MWh)], "#,##0")
+		lineageTag: 9b9c5de2-12e5-48a2-852e-da3b8a41daea
+
+	measure 'Charging sessions' = FORMAT([Total Sessions], "#,##0")
+		lineageTag: 7501e9fe-a653-48bc-a968-0083d817ca3a
+
+	measure 'Unique drivers' = FORMAT([Active Users], "#,##0")
+		lineageTag: d46af83d-0be6-4816-9ecc-4ecf4c9774ad
+
+	measure 'Insight Line — Demand' =
+			
+			VAR WeekdayHours =
+			    ADDCOLUMNS (
+			        VALUES ( Dim_Time[HourOfDay] ),
+			        "HourSessions", CALCULATE ( [Total Sessions], Dim_Date[DayType] = "Weekday" ),
+			        "WindowSessions",
+			            VAR StartHour = Dim_Time[HourOfDay]
+			            RETURN
+			                CALCULATE (
+			                    [Total Sessions],
+			                    Dim_Date[DayType] = "Weekday",
+			                    Dim_Time[HourOfDay] >= StartHour,
+			                    Dim_Time[HourOfDay] <= StartHour + 1
+			                )
+			    )
+			VAR PeakStart =
+			    MAXX ( TOPN ( 1, WeekdayHours, [WindowSessions], DESC, Dim_Time[HourOfDay], ASC ), Dim_Time[HourOfDay] )
+			VAR PeakEnd = PeakStart + 2
+			VAR EveningPeak =
+			    MAXX (
+			        TOPN (
+			            1,
+			            FILTER ( WeekdayHours, Dim_Time[HourOfDay] >= 16 && Dim_Time[HourOfDay] >= PeakEnd ),
+			            [HourSessions], DESC, Dim_Time[HourOfDay], ASC
+			        ),
+			        Dim_Time[HourOfDay]
+			    )
+			VAR EveningValue = MAXX ( FILTER ( WeekdayHours, Dim_Time[HourOfDay] = EveningPeak ), [HourSessions] )
+			VAR HourBeforeValue = MAXX ( FILTER ( WeekdayHours, Dim_Time[HourOfDay] = EveningPeak - 1 ), [HourSessions] )
+			VAR WeekendRatio =
+			    DIVIDE (
+			        CALCULATE ( [Avg Sessions per Day], Dim_Date[DayType] = "Weekend" ),
+			        CALCULATE ( [Avg Sessions per Day], Dim_Date[DayType] = "Weekday" )
+			    )
+			RETURN
+			    IF (
+			        ISBLANK ( PeakStart ),
+			        "No sessions in the current selection.",
+			        "Demand peaks " & FORMAT ( PeakStart, "00" ) & ":00–" & FORMAT ( PeakEnd, "00" ) & ":00 on weekdays"
+			            & IF (
+			                NOT ISBLANK ( EveningPeak ) && EveningValue > HourBeforeValue,
+			                ", with a second peak at " & FORMAT ( EveningPeak, "00" ) & ":00",
+			                ""
+			            )
+			            & ". Weekends run at " & FORMAT ( WeekendRatio, "0%" ) & " of weekday volume per day."
+			    )
+		lineageTag: fa61c147-fc89-492b-b4ed-f9ab284b046e
+
+	measure 'Insight Line — Sites' =
+			
+			VAR TopSite =
+			    MAXX (
+			        TOPN (
+			            1,
+			            ALLSELECTED ( Dim_Station[SiteName] ),
+			            [Energy per Port per Day (kWh)], DESC,
+			            Dim_Station[SiteName], ASC
+			        ),
+			        Dim_Station[SiteName]
+			    )
+			VAR TopVal   = CALCULATE ( [Energy per Port per Day (kWh)], Dim_Station[SiteName] = TopSite )
+			VAR TopUtil  = CALCULATE ( [Utilisation %], Dim_Station[SiteName] = TopSite )
+			VAR TopPorts = CALCULATE ( [Ports], Dim_Station[SiteName] = TopSite )
+			VAR LowestPortUtil =
+			    CALCULATE (
+			        MINX ( VALUES ( Dim_Station[Station Name] ), [Utilisation %] ),
+			        Dim_Station[SiteName] = TopSite
+			    )
+			VAR PortFloor = ROUNDDOWN ( LowestPortUtil, 2 )
+			RETURN
+			    IF (
+			        HASONEVALUE ( Dim_Station[SiteName] ),
+			        TopSite & " delivers " & FORMAT ( TopVal, "0.0" ) & " kWh per port per day at "
+			            & FORMAT ( TopUtil, "0.0%" ) & " port-time utilisation across "
+			            & TopPorts & " ports.",
+			        TopSite & " is the hardest-working site at " & FORMAT ( TopVal, "0.0" )
+			            & " kWh per port per day and " & FORMAT ( TopUtil, "0.0%" )
+			            & " port-time utilisation"
+			            & IF (
+			                LowestPortUtil >= 0.5,
+			                ", with all " & TopPorts & " ports at or above " & FORMAT ( PortFloor, "0%" )
+			                    & " — the strongest case for expansion.",
+			                "."
+			            )
+			    )
+		lineageTag: 459f6531-667e-43fb-861d-bfa0e9790272
+
+	measure 'Title — Utilisation' =
+			
+			VAR TopSite =
+			    MAXX (
+			        TOPN (
+			            1,
+			            ALLSELECTED ( Dim_Station[SiteName] ),
+			            [Utilisation %], DESC,
+			            Dim_Station[SiteName], ASC
+			        ),
+			        Dim_Station[SiteName]
+			    )
+			VAR TopUtil  = CALCULATE ( [Utilisation %], Dim_Station[SiteName] = TopSite )
+			VAR TopPorts = CALCULATE ( [Ports], Dim_Station[SiteName] = TopSite )
+			RETURN
+			    TopSite & " runs at " & FORMAT ( TopUtil, "0.0%" )
+			        & " port-time utilisation on " & TopPorts & " ports"
+		lineageTag: 325fc008-540e-4e07-825e-065b5e01a4e8
+
+	measure 'Bar Colour — Utilisation' =
+			
+			VAR TopSite =
+			    MAXX (
+			        TOPN (
+			            1,
+			            ALLSELECTED ( Dim_Station[SiteName] ),
+			            [Utilisation %], DESC,
+			            Dim_Station[SiteName], ASC
+			        ),
+			        Dim_Station[SiteName]
+			    )
+			RETURN
+			    IF ( SELECTEDVALUE ( Dim_Station[SiteName] ) = TopSite, "#1F3864", "#7FA7CE" )
+		lineageTag: de19e21a-db87-48ad-8622-63230f0ef228
+
+	measure 'Bar Colour — Energy per Port' =
+			
+			VAR TopSite =
+			    MAXX (
+			        TOPN (
+			            1,
+			            ALLSELECTED ( Dim_Station[SiteName] ),
+			            [Energy per Port per Day (kWh)], DESC,
+			            Dim_Station[SiteName], ASC
+			        ),
+			        Dim_Station[SiteName]
+			    )
+			RETURN
+			    IF ( SELECTEDVALUE ( Dim_Station[SiteName] ) = TopSite, "#1F3864", "#7FA7CE" )
+		lineageTag: d5256fe8-ed0f-4b3a-beef-fe5292248c90
+
+	measure 'Title — Fees' =
+			
+			VAR BeforeFees = CALCULATE ( [Sessions per Port per Day], Dim_Date[Year] IN { 2015, 2016 } )
+			VAR AfterFees = CALCULATE ( [Sessions per Port per Day], Dim_Date[Year] IN { 2018, 2019 } )
+			VAR Change = DIVIDE ( AfterFees - BeforeFees, BeforeFees )
+			RETURN
+			    IF (
+			        Change >= -0.05,
+			        "Fees didn't dent demand — sessions per port " & FORMAT ( Change, "+0%;-0%" ) & " after 2017",
+			        "Sessions per port fell " & FORMAT ( -Change, "0%" ) & " after fees were introduced"
+			    )
+		lineageTag: b6edc859-57b6-45ed-9603-5296979aa9dc
+
+	measure 'Title — Idle' =
+			
+			VAR IdleBefore = CALCULATE ( [Avg Idle Minutes], Dim_Date[Year] = 2016 )
+			VAR IdleAfter = CALCULATE ( [Avg Idle Minutes], Dim_Date[Year] = 2019 )
+			RETURN
+			    "Average idle time fell from " & FORMAT ( IdleBefore, "0" ) & " to "
+			        & FORMAT ( IdleAfter, "0" ) & " minutes per session"
+		lineageTag: 7d7ef9f0-b8a7-4066-9dc0-2761d413b86d
+
+	measure 'Insight Line — Users' =
+			
+			VAR SessBeforeFees = CALCULATE ( [Sessions per Port per Day], Dim_Date[Year] IN { 2015, 2016 } )
+			VAR SessAfterFees  = CALCULATE ( [Sessions per Port per Day], Dim_Date[Year] IN { 2018, 2019 } )
+			VAR SessChange     = DIVIDE ( SessAfterFees - SessBeforeFees, SessBeforeFees )
+			VAR IdleEarly      = CALCULATE ( [Avg Idle Minutes], Dim_Date[Year] = 2016 )
+			VAR IdleLate       = CALCULATE ( [Avg Idle Minutes], Dim_Date[Year] = 2019 )
+			RETURN
+			    "Fees from Aug 2017 coincided with "
+			        & IF ( SessChange < 0,
+			               FORMAT ( -SessChange, "0%" ) & " fewer sessions per port",
+			               FORMAT ( SessChange, "0%" ) & " more sessions per port" )
+			        & " and idle time falling from " & FORMAT ( IdleEarly, "0" ) & " to "
+			        & FORMAT ( IdleLate, "0" ) & " minutes per session. The top 1% of users generate "
+			        & FORMAT ( [Top 1% Session Share], "0%" ) & " of all sessions."
+		lineageTag: 35fbba49-041e-4162-883b-a3c5ef69c31e
+
+	measure 'Title — Growth' =
+			
+			VAR SelMin  = MIN ( Dim_Date[Year] )
+			VAR SelMax  = MAX ( Dim_Date[Year] )
+			VAR StartYr = IF ( SelMin = 2011 && SelMax > 2011, 2012, SelMin )
+			VAR YearTbl =
+			    ADDCOLUMNS (
+			        FILTER ( VALUES ( Dim_Date[Year] ), Dim_Date[Year] >= StartYr ),
+			        "E", [Total Energy (MWh)]
+			    )
+			VAR PeakYr  = MAXX ( TOPN ( 1, YearTbl, [E], DESC, Dim_Date[Year], ASC ), Dim_Date[Year] )
+			VAR EStart  = CALCULATE ( [Total Energy (MWh)], Dim_Date[Year] = StartYr )
+			VAR EPeak   = CALCULATE ( [Total Energy (MWh)], Dim_Date[Year] = PeakYr )
+			VAR ELast   = CALCULATE ( [Total Energy (MWh)], Dim_Date[Year] = SelMax )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        SelMin = SelMax,
+			            "Energy delivered in " & SelMax & ": " & FORMAT ( ELast, "#,0" ) & " MWh",
+			        PeakYr = StartYr,
+			            "Energy fell " & FORMAT ( DIVIDE ( EStart - ELast, EStart ), "0%" )
+			                & " from " & StartYr & " to " & SelMax,
+			        "Energy grew " & FORMAT ( DIVIDE ( EPeak, EStart ), "0" ) & "× from " & StartYr
+			            & " to " & PeakYr
+			            & IF ( PeakYr < SelMax,
+			                   ", then fell " & FORMAT ( DIVIDE ( EPeak - ELast, EPeak ), "0%" ) & " by " & SelMax,
+			                   "" )
+			    )
+		lineageTag: 18714aa5-25bf-4cad-a739-3edb75151a87
+
+	measure 'Title — Per Port' =
+			
+			VAR PerPortSite =
+			    MAXX (
+			        TOPN ( 1, ALLSELECTED ( Dim_Station[SiteName] ),
+			               [Energy per Port per Day (kWh)], DESC, Dim_Station[SiteName], ASC ),
+			        Dim_Station[SiteName]
+			    )
+			VAR PerPortValue = CALCULATE ( [Energy per Port per Day (kWh)], Dim_Station[SiteName] = PerPortSite )
+			RETURN
+			    "…but per port, " & PerPortSite & " works hardest: " & FORMAT ( PerPortValue, "0.0" )
+			        & " kWh per port per day vs " & FORMAT ( [Energy per Port per Day (kWh)], "0.0" ) & " for the network"
+		lineageTag: 1b46b9f9-ad78-4197-8739-c46afc0dd57c
+
+	measure 'Title — Top Energy' =
+			
+			VAR EnergySite  = [Top Site by Energy]
+			VAR EnergyShare = CALCULATE ( [Site Share of Energy %], Dim_Station[SiteName] = EnergySite )
+			RETURN
+			    EnergySite & " delivers the most energy: " & FORMAT ( EnergyShare, "0.0%" ) & " of the network"
+		lineageTag: 8e69d40c-20c0-483b-b912-44025cf8eb67
+
+	measure 'Title — Heatmap' =
+			
+			VAR PeakHourWk =
+			    MAXX (
+			        TOPN ( 1, VALUES ( Dim_Time[HourOfDay] ),
+			               CALCULATE ( [Total Sessions], Dim_Date[DayType] = "Weekday" ), DESC,
+			               Dim_Time[HourOfDay], ASC ),
+			        Dim_Time[HourOfDay]
+			    )
+			RETURN
+			    "Weekday demand peaks at " & FORMAT ( PeakHourWk, "00" ) & ":00"
+		lineageTag: 2c770120-72e8-49ec-8361-8566cae30cb5
+
+	measure 'Title — Evening Idle' =
+			
+			VAR EveningHours =
+			    ADDCOLUMNS (
+			        FILTER ( VALUES ( Dim_Time[HourOfDay] ),
+			                 Dim_Time[HourOfDay] >= 17 && [Session Share by Hour] >= 0.01 ),
+			        "Idle", [Idle Time %]
+			    )
+			VAR PeakRow  = TOPN ( 1, EveningHours, [Idle], DESC, Dim_Time[HourOfDay], ASC )
+			VAR PeakHour = MAXX ( PeakRow, Dim_Time[HourOfDay] )
+			VAR PeakIdle = MAXX ( PeakRow, [Idle] )
+			RETURN
+			    SWITCH (
+			        TRUE (),
+			        ISBLANK ( PeakHour ), "Sessions and idle share by hour",
+			        PeakIdle >= 0.4,
+			            "Evening charging is mostly parking — idle time peaks at " & FORMAT ( PeakIdle, "0%" )
+			                & " at " & FORMAT ( PeakHour, "00" ) & ":00",
+			        "Idle share peaks at " & FORMAT ( PeakIdle, "0%" ) & " at " & FORMAT ( PeakHour, "00" ) & ":00"
+			    )
+		lineageTag: 3fc5c691-418f-40f1-903b-bca8df2409d9
+
+	measure 'Title — Weekend' =
+			
+			VAR WeekendRate = CALCULATE ( [Avg Sessions per Day], Dim_Date[DayType] = "Weekend" )
+			VAR WeekdayRate = CALCULATE ( [Avg Sessions per Day], Dim_Date[DayType] = "Weekday" )
+			VAR WeekendRatio = DIVIDE ( WeekendRate, WeekdayRate )
+			RETURN
+			    "Weekends run at " & FORMAT ( WeekendRatio, "0%" ) & " of weekday volume per day"
+			        & IF ( WeekendRatio >= 0.7, " — not spare capacity", "" )
+		lineageTag: 877f1823-d3f5-498e-9bf0-bbfe155bbd90
+
+	measure 'Title — Dwell Network' =
+			
+			FORMAT ( [Share Over 4h], "0%" ) & " of sessions run over 4 hours"
+		lineageTag: a9b9b02a-f1cc-4aa0-b2f7-dd6506ae964c
+
+	measure 'Title — Scatter' =
+			
+			VAR SiteTbl =
+			    ADDCOLUMNS (
+			        FILTER ( ALLSELECTED ( Dim_Station[SiteName] ), [Total Sessions] >= 500 ),
+			        "P", [Ports],
+			        "K", [Energy per Port per Day (kWh)]
+			    )
+			VAR TopSite  = MAXX ( TOPN ( 1, SiteTbl, [K], DESC, Dim_Station[SiteName], ASC ), Dim_Station[SiteName] )
+			VAR BigSite  = MAXX ( TOPN ( 1, SiteTbl, [P], DESC, [K], ASC ), Dim_Station[SiteName] )
+			VAR TopPorts = MAXX ( FILTER ( SiteTbl, Dim_Station[SiteName] = TopSite ), [P] )
+			VAR BigPorts = MAXX ( FILTER ( SiteTbl, Dim_Station[SiteName] = BigSite ), [P] )
+			RETURN
+			    IF (
+			        TopSite = BigSite,
+			        "Here the largest site is also the busiest: " & TopSite & " (" & TopPorts & " ports)",
+			        "Bigger sites are not busier — " & TopSite & "'s " & TopPorts & " ports out-deliver "
+			            & BigSite & "'s " & BigPorts
+			    )
+		lineageTag: 128e5fe8-e010-4ea5-8425-3a43f7291cc6
+
+	measure 'Bar Colour — Energy' =
+			
+			VAR TopEnergySite =
+			    CALCULATE (
+			        MAXX (
+			            TOPN (
+			                1,
+			                VALUES ( Dim_Station[SiteName] ),
+			                [Total Energy (MWh)], DESC,
+			                Dim_Station[SiteName], ASC
+			            ),
+			            Dim_Station[SiteName]
+			        ),
+			        ALLSELECTED ( Dim_Station )
+			    )
+			RETURN
+			    IF ( SELECTEDVALUE ( Dim_Station[SiteName] ) = TopEnergySite, "#1F3864", "#7FA7CE" )
+		lineageTag: c0dbf195-50c1-45cd-97f3-8f304e45b75a
+
+	measure 'Title — Ports' =
+			
+			VAR WeakPorts =
+			    COUNTROWS (
+			        FILTER (
+			            VALUES ( Dim_Station[Station Name] ),
+			            [Energy per Port per Day (kWh)] < 0.25 * [Network kWh per Port per Day]
+			        )
+			    )
+			VAR SiteLabel = SELECTEDVALUE ( Dim_Station[SiteName] )
+			RETURN
+			    IF (
+			        WeakPorts > 0,
+			        WeakPorts & " of " & SiteLabel & "'s " & [Ports] & " ports deliver under a quarter of the network rate",
+			        "All " & [Ports] & " ports at " & SiteLabel & " deliver at least a quarter of the network rate"
+			    )
+		lineageTag: 57ef4251-b87d-4592-9813-3da03898cffd
+
+	partition '_Measures Dynamic titles and narrative (put these in card/title boxes)' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

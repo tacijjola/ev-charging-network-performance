@@ -1,0 +1,26 @@
+{
+  "name": "Jola Portfolio – Slate & Amber",
+  "dataColors": ["#1F3864","#3E6FA3","#7FA8CC","#C9D6E4","#B4801F","#7A6438","#4B5563","#9CA3AF"],
+  "background": "#FFFFFF",
+  "foreground": "#2D3644",
+  "tableAccent": "#1F3864",
+  "good": "#2E7D5B", "neutral": "#9CA3AF", "bad": "#B3422E",
+  "textClasses": {
+    "title":    { "fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1F3864" },
+    "header":   { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1F3864" },
+    "label":    { "fontFace": "Segoe UI", "fontSize": 10, "color": "#2D3644" },
+    "callout":  { "fontFace": "Segoe UI Light", "fontSize": 34, "color": "#1F3864" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#E4E8EF" } }, "radius": 8 }],
+        "dropShadow": [{ "show": false }],
+        "title": [{ "show": true, "alignment": "left", "fontSize": 12, "fontColor": { "solid": { "color": "#1F3864" } } }],
+        "visualHeader": [{ "show": false }]
+      }
+    },
+    "page": { "*": { "background": [{ "color": { "solid": { "color": "#F6F8FB" } }, "transparency": 0 }] } }
+  }
+}

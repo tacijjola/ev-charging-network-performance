@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "5177b27e314ac6e6c8c7",
+  "position": {
+    "x": 773.50318471337584,
+    "y": 421.91082802547771,
+    "z": 8000,
+    "height": 245.60509554140128,
+    "width": 482.03821656050957,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "raw → clean"
+                    }
+                  },
+                  "Property": "Step"
+                }
+              },
+              "queryRef": "raw → clean.Step",
+              "nativeQueryRef": "Step"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "raw → clean"
+                    }
+                  },
+                  "Property": "Sessions"
+                }
+              },
+              "queryRef": "raw → clean.Sessions",
+              "nativeQueryRef": "Sessions"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Raw → analysed'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table showing 259,415 raw sessions reduced to 259,384 after removing 17 duplicates and 14 non-USD sessions.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

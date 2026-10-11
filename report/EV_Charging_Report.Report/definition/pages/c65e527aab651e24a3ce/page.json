@@ -1,0 +1,55 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "c65e527aab651e24a3ce",
+  "displayName": "Users & Revenue",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "objects": {
+    "displayArea": [
+      {
+        "properties": {
+          "verticalAlignment": {
+            "expr": {
+              "Literal": {
+                "Value": "'Top'"
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "d646015a9c4441eb88ca",
+      "target": "4ba78c30ede196b7400a",
+      "type": "DataFilter"
+    },
+    {
+      "source": "d646015a9c4441eb88ca",
+      "target": "090da0f49a7902d7d041",
+      "type": "DataFilter"
+    },
+    {
+      "source": "090da0f49a7902d7d041",
+      "target": "a8f479de399727e704a5",
+      "type": "NoFilter"
+    },
+    {
+      "source": "090da0f49a7902d7d041",
+      "target": "70dcc46b89e00ec3d507",
+      "type": "NoFilter"
+    },
+    {
+      "source": "090da0f49a7902d7d041",
+      "target": "f68b53449a4179eb0e97",
+      "type": "NoFilter"
+    },
+    {
+      "source": "d646015a9c4441eb88ca",
+      "target": "a8f479de399727e704a5",
+      "type": "DataFilter"
+    }
+  ]
+}

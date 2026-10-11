@@ -1,0 +1,233 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "2d488b0ed1a502a2044d",
+  "position": {
+    "x": 23.088023088023089,
+    "y": 266.89754689754693,
+    "z": 2000,
+    "height": 199.48051948051949,
+    "width": 1235.6709956709958,
+    "tabOrder": 2000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Definitions",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "textDecoration": "underline"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "kWh per port per day:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " energy ÷ port-days · "
+                  },
+                  {
+                    "value": "Sessions per port per day:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " sessions ÷ port-days"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Port-days:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " days each port was in service in the selected period, summed across ports"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Utilisation %:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " plugged-in minutes ÷ (port-days × 1,440) · "
+                  },
+                  {
+                    "value": "Idle time %:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " idle minutes ÷ plugged-in minutes"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Avg sessions per day:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " sessions ÷ days in the selected period"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Fault rate %:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " fault-ended sessions ÷ sessions · "
+                  },
+                  {
+                    "value": "Paid session share %:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " sessions with a fee ÷ sessions"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Top 1% session share:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " sessions by the most active 1% of users ÷ sessions with a User ID · "
+                  },
+                  {
+                    "value": "Active users:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " distinct non-blank User IDs"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Network measures:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " the same measure with the site filter removed (Site Detail benchmark)"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "User bands (lifetime):",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " One-off = 1 · Occasional = 2–10 · Frequent = 11+ · "
+                  },
+                  {
+                    "value": "Duration bands:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " <1h, 1–2h, 2–4h, 4–8h, 8h+"
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " "
+                  },
+                  {
+                    "value": "Idle chart:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " hours 05:00–23:00; the evening peak uses hours with at least 1% of sessions"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

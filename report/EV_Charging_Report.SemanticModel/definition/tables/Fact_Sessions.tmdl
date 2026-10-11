@@ -1,0 +1,292 @@
+table Fact_Sessions
+	lineageTag: 46f910e3-348e-43bd-a7ee-c57dc63991bd
+
+	column 'Station Name'
+		dataType: string
+		lineageTag: fe4d74f4-7243-4af7-8796-592b823d67a0
+		summarizeBy: none
+		sourceColumn: Station Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Start Date'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6900426b-dc64-4036-96f0-fdafe6f9fcb9
+		summarizeBy: none
+		sourceColumn: Start Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'End Date'
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 138b95d5-fa2c-40f9-90db-9ec0e4b093da
+		summarizeBy: none
+		sourceColumn: End Date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Port Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: b892aab3-3617-46a2-9ca4-a19c466cc6c5
+		summarizeBy: sum
+		sourceColumn: Port Number
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Ended By'
+		dataType: string
+		lineageTag: 782e7c0a-bb14-44a0-a0ff-42603de008dd
+		summarizeBy: none
+		sourceColumn: Ended By
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Plug In Event Id'
+		dataType: int64
+		formatString: 0
+		lineageTag: a780966e-57b2-47f7-ad54-2e56ec85f2ca
+		summarizeBy: count
+		sourceColumn: Plug In Event Id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Driver Postal Code'
+		dataType: string
+		lineageTag: 0fac831e-b262-4ffd-9a5b-f9a1c163dd15
+		summarizeBy: none
+		sourceColumn: Driver Postal Code
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'User ID'
+		dataType: string
+		lineageTag: da18aec1-4943-4e3e-a949-61f514a1db06
+		summarizeBy: none
+		sourceColumn: User ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column TotalMin
+		dataType: double
+		lineageTag: 8e3f7c36-a847-4680-8d56-f38611d94839
+		summarizeBy: sum
+		sourceColumn: TotalMin
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ChargingMin
+		dataType: double
+		lineageTag: afe5e87b-fef5-4ff8-9977-649cb83a10b4
+		summarizeBy: sum
+		sourceColumn: ChargingMin
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column IdleMin
+		dataType: double
+		lineageTag: 69795d20-2199-41e2-a536-e8d84267d023
+		summarizeBy: sum
+		sourceColumn: IdleMin
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column DateKey
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: cdf02cfc-f6b5-4bd6-9941-50b0c529f8cf
+		summarizeBy: none
+		sourceColumn: DateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column HourOfDay
+		dataType: int64
+		formatString: 0
+		lineageTag: 1eec55cb-c82e-4eac-9522-eff0c98f8725
+		summarizeBy: none
+		sourceColumn: HourOfDay
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsDurationAnomaly
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: f4cd2138-40d8-4027-9ff3-f8d2449f0080
+		summarizeBy: none
+		sourceColumn: IsDurationAnomaly
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsLongSession
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 8545d752-e26c-47ef-8f47-bf79c4dada49
+		summarizeBy: none
+		sourceColumn: IsLongSession
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column EnergyKWh
+		dataType: double
+		lineageTag: 02205d1a-c5d8-46e8-aa80-1c449dfdd322
+		summarizeBy: sum
+		sourceColumn: EnergyKWh
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column GHGkg
+		dataType: double
+		lineageTag: f80aa5eb-dbe5-4af5-9d67-2d6845962e48
+		summarizeBy: sum
+		sourceColumn: GHGkg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column FeeUSD
+		dataType: double
+		lineageTag: 13ec830b-5334-41fb-8e8f-3dc02761f0fc
+		summarizeBy: sum
+		sourceColumn: FeeUSD
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column DurationBand =
+			
+			SWITCH(
+			    TRUE(),
+			    Fact_Sessions[TotalMin] < 60, "< 1h",
+			    Fact_Sessions[TotalMin] < 120, "1–2h",
+			    Fact_Sessions[TotalMin] < 240, "2–4h",
+			    Fact_Sessions[TotalMin] < 480, "4–8h",
+			    "8h +"
+			)
+		lineageTag: a7a7d90d-20dc-49a9-921c-9661e0f55936
+		summarizeBy: none
+		sortByColumn: DurationBandSort
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column DurationBandSort =
+			
+			SWITCH(
+			    TRUE(),
+			    Fact_Sessions[TotalMin] < 60, 1,
+			    Fact_Sessions[TotalMin] < 120, 2,
+			    Fact_Sessions[TotalMin] < 240, 3,
+			    Fact_Sessions[TotalMin] < 480, 4,
+			    5
+			)
+		isHidden
+		formatString: 0
+		lineageTag: bff47bcc-9ef9-4813-a05b-06adf4aba3cb
+		summarizeBy: sum
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_Sessions = m
+		mode: import
+		queryGroup: 03_Fact
+		source =
+				let
+				    Source = Src_Sessions,
+				
+				    #"Fixed End Date" = Table.TransformColumns(Source, {{"End Date", each
+				        let t = Text.Trim(_) in
+				        if t = null or t = "" then null
+				        else
+				          let n = try Number.FromText(t) in
+				          if n[HasError]
+				          then DateTime.FromText(t, [Culture = "en-US"])
+				          else #datetime(1899, 12, 30, 0, 0, 0) + #duration(0, 0, 0, Number.Round(n[Value] * 86400))
+				      , type datetime}}),
+				
+				    #"Added TotalMin" = Table.AddColumn(#"Fixed End Date", "TotalMin", each
+				        Number.Round(let p = Text.Split([TotalDurationText], ":") in
+				          Number.From(p{0})*60 + Number.From(p{1}) + Number.From(p{2})/60, 1), type number),
+				
+				    #"Added ChargingMin" = Table.AddColumn(#"Added TotalMin", "ChargingMin", each
+				        Number.Round(let p = Text.Split([ChargingTimeText], ":") in
+				          Number.From(p{0})*60 + Number.From(p{1}) + Number.From(p{2})/60, 1), type number),
+				
+				    #"Added IdleMin" = Table.AddColumn(#"Added ChargingMin", "IdleMin", each
+				        [TotalMin] - [ChargingMin], type number),
+				
+				    #"Added DateKey" = Table.AddColumn(#"Added IdleMin", "DateKey", each
+				        DateTime.Date([Start Date]), type date),
+				
+				    #"Added HourOfDay" = Table.AddColumn(#"Added DateKey", "HourOfDay", each
+				        Time.Hour(DateTime.Time([Start Date])), Int64.Type),
+				
+				    #"Added Quality Flags" = Table.AddColumn(
+				        Table.AddColumn(#"Added HourOfDay", "IsDurationAnomaly", each [IdleMin] < 0, type logical),
+				        "IsLongSession", each [TotalMin] > 1440, type logical),
+				
+				    #"Removed Duplicates" = Table.Distinct(#"Added Quality Flags", {"Plug In Event Id", "Station Name", "Start Date"}),
+				
+				    #"Filtered to USD" = Table.SelectRows(#"Removed Duplicates", each
+				        [Currency] = "USD" or [Currency] = null or [Currency] = ""),
+				
+				    #"Removed Dimension Columns" = Table.RemoveColumns(#"Filtered to USD",
+				        {"TotalDurationText", "ChargingTimeText", "SiteName", "Address", "Latitude", "Longitude",
+				         "Port Type", "Plug Type", "Currency", "Postal Code"}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Removed Dimension Columns","",null,Replacer.ReplaceValue,{"User ID"})
+				in
+				    #"Replaced Value"
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

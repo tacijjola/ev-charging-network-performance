@@ -1,0 +1,69 @@
+table Dim_Time
+	lineageTag: 6765edc2-3b00-4414-a8e6-da834c40e077
+
+	column HourOfDay
+		dataType: int64
+		formatString: 0
+		lineageTag: 73e2eb75-b794-4066-8db8-87aca0a28690
+		summarizeBy: none
+		sourceColumn: HourOfDay
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column HourBand
+		dataType: string
+		lineageTag: 658bae21-2c3f-46fd-984f-9e0faf666241
+		summarizeBy: none
+		sourceColumn: HourBand
+		sortByColumn: 'HourBand Sort'
+
+		changedProperty = IsHidden
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column HourLabel
+		dataType: string
+		lineageTag: 8f32d86e-91e9-49f0-b98f-ef0cdc4a2b87
+		summarizeBy: none
+		sourceColumn: HourLabel
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'HourBand Sort' = INT ( Dim_Time[HourOfDay] / 6 ) + 1
+		isHidden
+		formatString: 0
+		lineageTag: cd8c4ef5-57d1-45ca-b903-3bc66d6a46bc
+		summarizeBy: none
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Dim_Time = m
+		mode: import
+		queryGroup: 02_Dim
+		source =
+				let
+				    Source = Table.FromList({0..23}, Splitter.SplitByNothing(), {"HourOfDay"}),
+				    Typed  = Table.TransformColumnTypes(Source, {{"HourOfDay", Int64.Type}}),
+				    Band   = Table.AddColumn(Typed, "HourBand", each
+				              if [HourOfDay] < 6 then "Night (00-05)"
+				              else if [HourOfDay] < 12 then "Morning (06-11)"
+				              else if [HourOfDay] < 18 then "Midday (12-17)"
+				              else "Evening (18-23)", type text),
+				    Label  = Table.AddColumn(Band, "HourLabel", each Text.PadStart(Text.From([HourOfDay]), 2, "0") & ":00", type text)
+				in
+				    Label
+
+	changedProperty = IsHidden
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

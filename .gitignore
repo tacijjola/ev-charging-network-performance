@@ -1,0 +1,21 @@
+# Raw third-party data — download from source, see data/README.md
+*.csv
+
+# Power BI Project: local cache and settings (data, not model)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+*.pbix
+
+# Video and working documents
+*.mp4
+*.docx
+
+# OS / editor
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+~$*

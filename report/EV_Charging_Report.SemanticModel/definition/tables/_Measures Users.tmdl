@@ -1,0 +1,73 @@
+table '_Measures Users'
+	lineageTag: 1d6f30a9-b53b-4ed5-88a0-fbe11fdb6f84
+
+	measure 'Avg Sessions per User' =
+			
+			VAR Users = DISTINCTCOUNTNOBLANK ( Fact_Sessions[User ID] )
+			VAR Sessions = CALCULATE ( [Total Sessions], NOT ISBLANK ( Fact_Sessions[User ID] ) )
+			RETURN
+			    DIVIDE ( Sessions, Users )
+		formatString: 0.0
+		lineageTag: f3e6f326-8eb2-477c-a899-11fd470a2276
+
+	measure 'New Users' =
+			
+			VAR CurrentEnd = MAX(Dim_Date[Date])
+			VAR CurrentStart = MIN(Dim_Date[Date])
+			RETURN
+			CALCULATE(
+			    DISTINCTCOUNT(Dim_User[User ID]),
+			    FILTER(Dim_User, Dim_User[FirstSession] >= CurrentStart && Dim_User[FirstSession] <= CurrentEnd)
+			)
+		formatString: 0
+		lineageTag: ad241c49-a4b6-4464-920b-51fe63645bb7
+
+	measure 'Frequent User Share %' =
+			
+			DIVIDE(
+			    CALCULATE([Total Sessions], Dim_User[UserBand] = "Frequent"),
+			    CALCULATE([Total Sessions], ALL(Dim_User[UserBand]))
+			)
+		lineageTag: 30b3c280-43c7-4f54-bbd8-bee66c5a5a7b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sessions with No User ID' =
+			
+			CALCULATE([Total Sessions], ISBLANK(Fact_Sessions[User ID]))
+		formatString: #,0
+		lineageTag: 6f30299f-09cc-4abf-8d99-fbbd42cbc2cb
+
+	measure 'Paid Session Share %' =
+			
+			IF (
+			    [Total Sessions] > 0,
+			    DIVIDE ( CALCULATE ( [Total Sessions], Fact_Sessions[FeeUSD] > 0 ) + 0, [Total Sessions] )
+			)
+		formatString: 0%;-0%;0%
+		lineageTag: 1417484f-a4f1-49e0-ab99-9db870f30c64
+
+	measure 'Title — Concentration' =
+			
+			"The top 1% of users generate " & FORMAT ( [Top 1% Session Share], "0%" ) & " of sessions"
+		lineageTag: bf319461-aa30-4f5d-97e2-c337821e160f
+
+	measure 'First Paid Session' =
+			
+			CALCULATE ( MIN ( Fact_Sessions[Start Date] ), Fact_Sessions[FeeUSD] > 0 )
+		formatString: General Date
+		lineageTag: 55d96e24-555c-47ec-bf05-8d23b7678932
+
+	partition '_Measures Users' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

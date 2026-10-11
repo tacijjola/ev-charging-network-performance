@@ -1,0 +1,188 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "ade073716c9958328650",
+  "position": {
+    "x": 23.088023088023089,
+    "y": 62.7994227994228,
+    "z": 1000,
+    "height": 190.24531024531026,
+    "width": 1234.7474747474748,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Assumptions & limitations",
+                    "textStyle": {
+                      "fontWeight": "bold",
+                      "textDecoration": "underline"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "• "
+                  },
+                  {
+                    "value": "Port-days:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " each port is in service from its first session to the end of the data. Outages aren't recorded, so offline ports understate per-port figures."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Utilisation",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " is plugged-in time, including idle time (19.6% network-wide)."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Sherman",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " opened in Dec 2020 with 39 sessions: shown, not compared."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Sites",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " are grouped by station name; Bryant and Cambridge each span two addresses. "
+                  },
+                  {
+                    "value": "Revenue",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " is in USD."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "User analysis",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " covers 97% of sessions (7,677 have no User ID). User bands and deciles use lifetime counts and ignore slicers."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Comparisons:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " fees 2015–16 vs 2018–19 (2017 mixed, fees from 1 Aug; 2020 excluded, COVID-19); idle 2016 vs 2019. Results show timing, not cause."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Time:",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " sessions count on their start date and hour. 2011 covers Jul–Dec; growth is measured from 2012."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": " • "
+                  },
+                  {
+                    "value": "Chart titles",
+                    "textStyle": {
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": " are calculated and update with filters; interpretive notes (COVID-19, fee date) are fixed."
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,49 @@
+table 'raw → clean'
+	lineageTag: d95e4c5d-e1d8-450a-a184-6cc47b1e2da1
+
+	column Step
+		dataType: string
+		lineageTag: 1158b6db-658e-4bd0-bdd6-e81c76943da0
+		summarizeBy: none
+		sourceColumn: Step
+		sortByColumn: Order
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sessions
+		dataType: string
+		lineageTag: 4f0f0821-5229-49bb-9e9f-3aba32716a3d
+		summarizeBy: none
+		sourceColumn: Sessions
+
+		annotation SummarizationSetBy = Automatic
+
+	column Order
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ce9a1fe5-1596-4325-9887-1e81b9f6fa03
+		summarizeBy: sum
+		sourceColumn: Order
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'raw → clean' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WCkosV0jLzElV0lEyMrXUMTE0VYrViVZ61DFJwaW0ICczObEkVaEoNTm/KKUYqAYobmgOV+GXn6cbGuyiUJxaXJyZnwdTYAJW4JiXmFNZnJoCNdnYAigcCwA=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Step = _t, Sessions = _t]),
+				    #"Added Index" = Table.AddIndexColumn(Source, "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "Order"}}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",{"Order", "Step", "Sessions"})
+				in
+				  #"Reordered Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
